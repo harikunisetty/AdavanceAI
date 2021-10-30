@@ -6,7 +6,7 @@ public class Node
 {
     public enum Status
     {
-        Runing,sucess,Failure
+        Running, sucess,Failure
     }
     public Status status;
 
@@ -19,7 +19,11 @@ public class Node
     public Node(string _name)
     {
         name = _name;
-    } 
+    }
+    public virtual Status Process()
+    {
+        return Children[currentChild].Process();
+    }
     public void Addchild(Node nodeValue)
     {
         Children.Add(nodeValue);

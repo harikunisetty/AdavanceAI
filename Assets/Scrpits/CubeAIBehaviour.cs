@@ -6,28 +6,70 @@ using UnityEngine.AI;
 public class CubeAIBehaviour : MonoBehaviour
 {
     public BehaviourTree tree;
-    [Header("Unity UI")]
+    public enum AgentState { Idle, Working };
+
+    [Header("Unity AI")]
     private NavMeshAgent agent;
-    [SerializeField] Transform targetTransform;
+    [SerializeField] Transform targetATrans, targetBTrans;
+    private Node.Status treeStatus = Node.Status.Running;
+    private AgentState agentState = AgentState.Idle;
+    
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         tree = new BehaviourTree();
 
-        Node getItem = new Node("Get Key");
-        Node goToKeyPosition = new Node("GO To Key");
-        Node escap = new Node("Escape");
-
+        Sequence getItem = new Sequence("Get Key");
+        Leaf goToKeyPosition = new Leaf("Go To Key", GoToKeyObject);
+        Leaf escape = new Leaf("Escape", GoToHideOut);
 
         getItem.Addchild(goToKeyPosition);
-        getItem.Addchild(escap);
+        getItem.Addchild(escape);
         tree.Addchild(getItem);
 
+
         tree.PrintTree();
-        agent.SetDestination(targetTransform.position);
+       /* agent.SetDestination(targetATrans.position);*/
     }
+    public Node.Status GoToKeyObject()
+    {
+        return GoToLocation(targetATrans.position);
+    }
+
+    public Node.Status GoToHideOut()
+    {
+        return GoToLocation(targetBTrans.position);
+    }
+
     void Update()
     {
-        
+        if (treeStatus == Node.Status.Running)
+            treeStatus = tree.Process();
+    }
+
+    private Node.Status GoToLocation(Vector3 destinationPosition)
+    {
+        float distanceToTarget = Vector3.Distance(destinationPosition, this.transform.position);
+
+        if (agentState == AgentState.Idle)
+        {
+            agent.SetDestination(destinationPosition);
+            agentState = AgentState.Working;
+        }
+        else if (Vector3.Distance(agent.pathEndPosition, destinationPosition) >= 2)
+        {
+            agentState = AgentState.Idle;
+
+            return Node.Status.Failure;
+        }
+        else if (distanceToTarget < 2)
+        {
+            agentState = AgentState.Idle;
+
+            return Node.Status.sucess;
+        }
+
+        return Node.Status.Running;
     }
 }

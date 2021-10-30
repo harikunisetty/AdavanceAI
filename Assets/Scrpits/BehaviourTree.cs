@@ -17,6 +17,10 @@ public class BehaviourTree : Node
         public int level;
         public Node node;
     }
+    public override Status Process()
+    {
+        return Children[currentChild].Process();
+    }
     public void PrintTree()
     {
         string treePrint = " ";

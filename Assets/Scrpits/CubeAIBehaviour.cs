@@ -10,7 +10,7 @@ public class CubeAIBehaviour : MonoBehaviour
 
     [Header("Unity AI")]
     private NavMeshAgent agent;
-    [SerializeField] Transform targetATrans, targetBTrans;
+    [SerializeField] Transform targetATrans, targetBTrans,frontDoor,backDoor;
     private Node.Status treeStatus = Node.Status.Running;
     private AgentState agentState = AgentState.Idle;
     
@@ -21,17 +21,33 @@ public class CubeAIBehaviour : MonoBehaviour
         tree = new BehaviourTree();
 
         Sequence getItem = new Sequence("Get Key");
+        Leaf goToFrontDoor = new Leaf("go To Front Door", GoToFrontDoor);
+        Leaf goToBackDoor = new Leaf("go To Front Door", GoToBackDoor);
         Leaf goToKeyPosition = new Leaf("Go To Key", GoToKeyObject);
         Leaf escape = new Leaf("Escape", GoToHideOut);
 
+        Selector doorWay = new Selector("Door Way");
+        doorWay.Addchild(goToBackDoor);
+        doorWay.Addchild(goToFrontDoor);
+
         getItem.Addchild(goToKeyPosition);
+        getItem.Addchild(goToBackDoor);
         getItem.Addchild(escape);
+        getItem.Addchild(doorWay);
         tree.Addchild(getItem);
 
 
         tree.PrintTree();
        /* agent.SetDestination(targetATrans.position);*/
     }
+    public Node.Status GoToFrontDoor()
+    {
+        return GoToLocation(frontDoor.position);
+    }
+    public Node.Status GoToBackDoor()
+    {
+        return GoToLocation(backDoor.position);
+    }   
     public Node.Status GoToKeyObject()
     {
         return GoToLocation(targetATrans.position);
